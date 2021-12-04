@@ -21,7 +21,7 @@
      :numbers (into (hash-set) (vals pos-number))}))
 
 (defn parse-boards [sections]
-  (into (hash-map) (map-indexed (fn [idx s] [idx (parse-board s)]) sections)))
+  (into (hash-map) (map-indexed #(vector %1 (parse-board %2)) sections)))
 
 (defn parse-numbers-row [line]
   (map #(Integer/parseInt %) (string/split line #",")))
@@ -54,8 +54,8 @@
   (loop [[n & ns] numbers
          played (hash-set)]
     (let [updated-played (conj played n)]
-      (if-let [winning-board-id (first (filter-winning-boards id->board updated-played))]
-        (calculate-score (id->board winning-board-id) updated-played n)
+      (if-let [winning-board-ids (filter-winning-boards id->board updated-played)]
+        (calculate-score (id->board (first winning-board-ids)) updated-played n)
         (recur ns updated-played)))))
 
 (defn play-part2 [numbers id->board]
