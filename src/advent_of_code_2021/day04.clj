@@ -1,10 +1,10 @@
 (ns advent_of_code_2021.day04
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [clojure.set :as s]))
 
 (defn parse-board-row [row-num row-str]
-  (let [numbers (str/split (str/trim row-str) #"\s+")]
+  (let [numbers (string/split (string/trim row-str) #"\s+")]
     (map-indexed #(vector [row-num %1] (Integer/parseInt %2)) numbers)))
 
 (defn extract-rows-and-columns [board]
@@ -15,7 +15,7 @@
       (set (map #(board %) p)))))
 
 (defn parse-board [section]
-  (let [lines (str/split-lines section)
+  (let [lines (string/split-lines section)
         pos-number (into (hash-map)
                      (apply concat (map-indexed #(parse-board-row %1 %2) lines)))]
     {:rows-columns (extract-rows-and-columns pos-number),
@@ -25,11 +25,11 @@
   (into (hash-map) (map-indexed #(vector %1 (parse-board %2)) sections)))
 
 (defn parse-numbers-row [line]
-  (map #(Integer/parseInt %) (str/split line #",")))
+  (map #(Integer/parseInt %) (string/split line #",")))
 
 (defn parse-input []
   (let [input (slurp (io/resource "input-04.txt"))
-        sections (str/split input #"\n\n")]
+        sections (string/split input #"\n\n")]
     [(parse-numbers-row (first sections)) (parse-boards (rest sections))]))
 
 (defn winner? [board played]
@@ -64,8 +64,8 @@
          played (hash-set)
          remaining-ids (keys id->board)]
     (let [updated-played (conj played n)
-          remaining-id->book (select-keys id->board remaining-ids)]
-      (if-let [winning-board-ids (filter-winning-boards remaining-id->book updated-played)]
+          remaining-id->board (select-keys id->board remaining-ids)]
+      (if-let [winning-board-ids (filter-winning-boards remaining-id->board updated-played)]
         (if (= 1 (count remaining-ids))
           (calculate-score (id->board (first winning-board-ids)) updated-played n)
           (recur ns updated-played (remove-winning-boards remaining-ids winning-board-ids)))
