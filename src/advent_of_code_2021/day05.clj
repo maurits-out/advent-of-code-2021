@@ -40,8 +40,7 @@
                        (cond
                          (= y1 y2) (generate-points-horizontal x1 x2 y1)
                          (= x1 x2) (generate-points-vertical x1 y1 y2)
-                         diagonal-vents? (generate-points-diagonal x1 y1 x2 y2)
-                         :else (seq [])))
+                         diagonal-vents? (generate-points-diagonal x1 y1 x2 y2)))
                   vents)))
 
 (defn count-overlapping [vents diagonal-vents?]
