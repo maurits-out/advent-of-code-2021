@@ -5,20 +5,23 @@
 (defn parse-int [s]
   (Integer/parseInt s))
 
+(defn sign [n]
+  (if (pos-int? n) 1 -1))
+
 (defn parse-line [l]
   (let [[_ x1 y1 x2 y2] (re-matches #"(\d+),(\d+) -> (\d+),(\d+)" l)]
     (vector (parse-int x1) (parse-int y1) (parse-int x2) (parse-int y2))))
 
 (defn generate-points-vertical [x y1 y2]
   (let [diff (- y2 y1)
-        dy (if (pos-int? diff) 1 -1)]
+        dy (sign diff)]
     (->> (iterate #(+ % dy) y1)
          (map #(vector x %))
          (take (inc (* dy diff))))))
 
 (defn generate-points-horizontal [x1 x2 y]
   (let [diff (- x2 x1)
-        dx (if (pos-int? diff) 1 -1)]
+        dx (sign diff)]
     (->> (iterate #(+ % dx) x1)
          (map #(vector % y))
          (take (inc (* dx diff))))))
@@ -26,8 +29,8 @@
 (defn generate-points-diagonal [x1 y1 x2 y2]
   (let [diff-x (- x2 x1)
         diff-y (- y2 y1)
-        dx (if (pos-int? diff-x) 1 -1)
-        dy (if (pos-int? diff-y) 1 -1)]
+        dx (sign diff-x)
+        dy (sign diff-y)]
     (->> (iterate #(inc %) 0)
          (map #(vector (+ x1 (* % dx)) (+ y1 (* % dy))))
          (take (inc (* dx diff-x))))))
