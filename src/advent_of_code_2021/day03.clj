@@ -6,8 +6,7 @@
   (- (int ch) (int \0)))
 
 (defn convert-line [l]
-  (->> l
-       (map-indexed (fn [pos ch] [pos (binary-char-to-int ch)]))))
+  (map-indexed #(vector %1 (binary-char-to-int %2)) l))
 
 (defn max-occurrence [freq]
   (key (apply max-key val freq)))
@@ -18,11 +17,9 @@
 (defn exp [x n]
   (reduce * (repeat n x)))
 
-(defn calculate-epsilon-rate [pos-freqs]
-  (apply + (map (fn [[pos freq]] (* (exp 2 pos) (min-occurrence freq))) pos-freqs)))
-
-(defn calculate-gamma-rate [pos-freqs]
-  (apply + (map (fn [[pos freq]] (* (exp 2 pos) (max-occurrence freq))) pos-freqs)))
+(defn calculate-rate [position->frequencies func]
+  (apply +
+    (for [[pos freq] position->frequencies] (* (exp 2 pos) (func freq)))))
 
 (defn read-input []
   (->> (io/resource "input-03.txt")
@@ -30,36 +27,30 @@
        string/split-lines))
 
 (defn count-and-group-by-position [ls]
-  (->> ls
-       (map convert-line)
+  (->> (map convert-line ls)
        (apply concat)
        (group-by first)
        (reduce-kv #(assoc %1 %2 (frequencies (map second %3))) {})))
 
-(defn part1 [pos-freqs]
-  (* (calculate-gamma-rate pos-freqs) (calculate-epsilon-rate pos-freqs)))
+(defn part1 [position->frequencies]
+  (* (calculate-rate position->frequencies min-occurrence) (calculate-rate position->frequencies max-occurrence)))
 
-(defn find-most-common-value [freqs]
-  (let [zeros (freqs 0)
-        ones (freqs 1)]
-    (if (>= ones zeros) 1 0)))
+(defn find-most-common-value [frequencies]
+  (if (>= (frequencies 1) (frequencies 0)) 1 0))
 
-(defn find-least-common-value [freqs]
-  (let [zeros (freqs 0)
-        ones (freqs 1)]
-    (if (<= zeros ones) 0 1)))
+(defn find-least-common-value [frequencies]
+  (if (<= (frequencies 0) (frequencies 1)) 0 1))
 
 (defn filter-numbers [numbers bit pos]
-  (for [n numbers :when (= (binary-char-to-int (nth n pos)) bit)]
-    n))
+  (for [n numbers :when (= (binary-char-to-int (nth n pos)) bit)] n))
 
 (defn find-oxygen-generator-rating [ls]
   (loop [numbers ls
          pos 0]
     (if (= (count numbers) 1)
       (Integer/parseInt (first numbers) 2)
-      (let [pos-freqs (count-and-group-by-position numbers)
-            most-common-value (find-most-common-value (pos-freqs pos))]
+      (let [position-frequencies (count-and-group-by-position numbers)
+            most-common-value (find-most-common-value (position-frequencies pos))]
         (recur (filter-numbers numbers most-common-value pos) (inc pos))))))
 
 (defn find-scrubber-generator-rating [ls]
@@ -67,8 +58,8 @@
          pos 0]
     (if (= (count numbers) 1)
       (Integer/parseInt (first numbers) 2)
-      (let [pos-freqs (count-and-group-by-position numbers)
-            least-common-value (find-least-common-value (pos-freqs pos))]
+      (let [position->frequencies (count-and-group-by-position numbers)
+            least-common-value (find-least-common-value (position->frequencies pos))]
         (recur (filter-numbers numbers least-common-value pos) (inc pos))))))
 
 (defn part2 [ls]
