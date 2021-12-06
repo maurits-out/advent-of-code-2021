@@ -13,8 +13,8 @@
 (defn next-day [state]
   (reduce-kv (fn [m k v] (if (zero? k)
                            (-> m
-                               (update 6 #(sum-nil % v))
-                               (update 8 #(sum-nil % v)))
+                               (assoc 8 v)
+                               (update 6 #(sum-nil % v)))
                            (update m (dec k) #(sum-nil % v))))
     {} state))
 
