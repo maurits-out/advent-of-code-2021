@@ -52,16 +52,22 @@
 (defn is-valid-candidate-mapping [signal-patterns wire->segment]
   (every? #(pattern-maps-to-valid-digit? % wire->segment) signal-patterns))
 
-(defn search-candidate-mappings [wire->possible-segments wires-to-assign mapping-under-construction]
-  (if (empty? wires-to-assign)
-    [mapping-under-construction]
-    (let [wire (first wires-to-assign)
-          remaining-possible-segments (s/difference (wire->possible-segments wire) (set (vals mapping-under-construction)))]
-      (apply concat (map (fn [c] (search-candidate-mappings wire->possible-segments (rest wires-to-assign) (assoc mapping-under-construction wire c))) remaining-possible-segments)))))
+(defn search-candidate-mappings-fn [wire->possible-segments]
+  (fn search-candidate-mappings [wires-to-assign mapping-under-construction]
+    (if (empty? wires-to-assign)
+      [mapping-under-construction]
+      (let [[w & ws] wires-to-assign
+            possible-segments (wire->possible-segments w)
+            segments-already-mapped (set (vals mapping-under-construction))
+            remaining-possible-segments (s/difference possible-segments segments-already-mapped)]
+        (apply concat (for [s remaining-possible-segments
+                            :let [updated-mapping (assoc mapping-under-construction w s)]]
+                        (search-candidate-mappings ws updated-mapping)))))))
 
 (defn map-wires-to-segments [signal-patterns]
   (let [wire->possible-segments (map-wires-to-possible-segments signal-patterns)
-        candidate-mappings (search-candidate-mappings wire->possible-segments (keys wire->possible-segments) {})]
+        search-candidate-mappings (search-candidate-mappings-fn wire->possible-segments)
+        candidate-mappings (search-candidate-mappings (keys wire->possible-segments) {})]
     (->> candidate-mappings
          (filter (partial is-valid-candidate-mapping signal-patterns))
          first)))
@@ -78,9 +84,7 @@
        (calculate-output-value output-patterns)))
 
 (defn part2 [entries]
-  (->> entries
-       (map calculate-output-of-entry)
-       (apply +)))
+  (reduce #(+ %1 (calculate-output-of-entry %2)) 0 entries))
 
 (defn -main []
   (let [entries (parse-input)]
