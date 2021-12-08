@@ -58,9 +58,9 @@
       [mapping-under-construction]
       (let [[w & ws] wires-to-assign
             possible-segments (wire->possible-segments w)
-            segments-already-mapped (set (vals mapping-under-construction))
-            remaining-possible-segments (s/difference possible-segments segments-already-mapped)]
-        (apply concat (for [s remaining-possible-segments
+            already-mapped (set (vals mapping-under-construction))
+            remaining (s/difference possible-segments already-mapped)]
+        (apply concat (for [s remaining
                             :let [updated-mapping (assoc mapping-under-construction w s)]]
                         (search-candidate-mappings ws updated-mapping)))))))
 
