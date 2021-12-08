@@ -1,7 +1,8 @@
 (ns advent_of_code_2021.day08
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
-            [clojure.set :as s]))
+            [clojure.set :as s]
+            [criterium.core :as crit]))
 
 (def segments->digit {#{:a :b :c :e :f :g}    0,
                       #{:c :f}                1,
@@ -66,9 +67,8 @@
 
 (defn map-wires-to-segments [signal-patterns]
   (let [wire->possible-segments (map-wires-to-possible-segments signal-patterns)
-        search-candidate-mappings (search-candidate-mappings-fn wire->possible-segments)
-        candidate-mappings (search-candidate-mappings (keys wire->possible-segments) {})]
-    (->> candidate-mappings
+        search-candidate-mappings (search-candidate-mappings-fn wire->possible-segments)]
+    (->> (search-candidate-mappings (keys wire->possible-segments) {})
          (filter (partial is-valid-candidate-mapping signal-patterns))
          first)))
 
@@ -89,4 +89,5 @@
 (defn -main []
   (let [entries (parse-input)]
     (println "Part 1:" (part1 entries))
-    (println "Part 2:" (part2 entries))))
+    (println "Part 2:" (part2 entries))
+    (comment (crit/bench (part2 entries)))))
