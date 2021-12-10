@@ -1,7 +1,6 @@
 (ns advent_of_code_2021.day09
   (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [data.deque :refer [deque add-last remove-first peek-first]]))
+            [clojure.string :as string]))
 
 (defn parse-line [l]
   (mapv #(- (int %) (int \0)) l))
@@ -36,7 +35,7 @@
 
 (defn part1 [heightmap low-points]
   (->> low-points
-       (map (fn [[r c]] (inc (aget heightmap r c))))
+       (mapv (fn [[r c]] (inc (aget heightmap r c))))
        (apply +)))
 
 (defn next-locations-to-visit [heightmap visited location]
@@ -45,13 +44,13 @@
        (remove #(= 9 (aget heightmap (first %) (second %))))))
 
 (defn basin-size [heightmap low-point]
-  (loop [queue (deque low-point)
+  (loop [stack (list low-point)
          visited #{low-point}
          current-size 1]
-    (if (empty? queue)
+    (if (empty? stack)
       current-size
-      (let [next-locations (next-locations-to-visit heightmap visited (peek-first queue))]
-        (recur (into (remove-first queue) next-locations)
+      (let [next-locations (next-locations-to-visit heightmap visited (first stack))]
+        (recur (into (next stack) next-locations)
           (into visited next-locations)
           (+ current-size (count next-locations)))))))
 
