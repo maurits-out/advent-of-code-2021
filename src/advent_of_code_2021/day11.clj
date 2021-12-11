@@ -1,7 +1,6 @@
 (ns advent_of_code_2021.day11
   (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [clojure.walk :as w]))
+            [clojure.string :as string]))
 
 (defn char->number [ch]
   (- (int ch) (int \0)))
@@ -17,7 +16,7 @@
   (slurp (io/resource "input-11.txt")))
 
 (defn inc-energy-level [state]
-  (update state :grid #(w/walk (fn [[position level]] [position (inc level)]) identity %)))
+  (update state :grid (fn [grid] (reduce-kv #(assoc %1 %2 (inc %3)) {} grid))))
 
 (defn find-position-to-flash [grid flashed]
   (->> grid
