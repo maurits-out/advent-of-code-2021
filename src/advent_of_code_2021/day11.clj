@@ -9,7 +9,8 @@
 (defn create-grid [input]
   (into (hash-map)
     (apply concat (map-indexed
-                    (fn [r l] (map-indexed (fn [c ch] [[r c] (char->number ch)]) l))
+                    (fn [r l]
+                      (map-indexed (fn [c ch] [[r c] (char->number ch)]) l))
                     (string/split-lines input)))))
 
 (defn read-input []
@@ -24,12 +25,13 @@
        (remove (fn [[position _]] (flashed position)))
        ffirst))
 
-(defn adjacent-positions [grid [row column]]
-  (let [r (range -1 2)
-        adjacent-positions (for [dr r, dc r,
-                                 :when (not= dr dc 0)]
-                             [(+ row dr) (+ column dc)])]
-    (filter #(contains? (set (keys grid)) %) adjacent-positions)))
+(defn adjacent-positions [grid [row column :as position]]
+  (let [r (range -1 2),
+        all-pos (set (keys grid))]
+    (for [dr r, dc r,
+          :let [p [(+ row dr) (+ column dc)]]
+          :when (and (not= p position) (all-pos p))]
+      p)))
 
 (defn flash [grid position]
   (reduce #(update %1 %2 inc) grid (adjacent-positions grid position)))
