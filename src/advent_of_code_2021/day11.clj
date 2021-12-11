@@ -39,10 +39,9 @@
 
 (defn do-flashes [state]
   (loop [grid (:grid state) flashed #{}]
-    (let [position (find-position-to-flash grid flashed)]
-      (if (nil? position)
-        {:grid (reset-flashed-positions grid flashed), :flash-count (count flashed)}
-        (recur (flash grid position) (conj flashed position))))))
+    (if-let [position (find-position-to-flash grid flashed)]
+      (recur (flash grid position) (conj flashed position))
+      {:grid (reset-flashed-positions grid flashed), :flash-count (count flashed)})))
 
 (defn initial-state [input]
   {:grid (create-grid input) :flash-count 0})
