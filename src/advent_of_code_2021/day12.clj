@@ -31,10 +31,10 @@
 (defn visit-allowed? [cave visit-count allow-2-visits?]
   (cond
     (= cave "start") false
-    (small-cave? cave) (case (get visit-count cave 0)
-                         0 true
-                         2 false
-                         1 (and allow-2-visits? (no-small-caves-visited-twice? visit-count)))
+    (small-cave? cave) (case (visit-count cave)
+                         nil true
+                         1 (and allow-2-visits? (no-small-caves-visited-twice? visit-count))
+                         false)
     :else true))
 
 (defn filter-neighbors [visit-count allow-2-visits? neighbors]
