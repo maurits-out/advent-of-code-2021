@@ -45,7 +45,7 @@
       {:grid (reset-flashed-positions grid flashed), :flash-count (count flashed)})))
 
 (defn initial-state [input]
-  {:grid (create-grid input) :flash-count 0})
+  {:grid (create-grid input), :flash-count 0})
 
 (defn states [input]
   (iterate (comp do-flashes inc-energy-level) (initial-state input)))
