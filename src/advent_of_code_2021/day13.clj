@@ -29,8 +29,8 @@
      :fold-instructions (parse-fold-instructions (second sections))}))
 
 (defn fold [dots {:keys [axis line]}]
-  (->> (map (partial (fold-fn axis) line) dots)
-       (into #{})))
+  (let [fn (partial (fold-fn axis) line)]
+    (into #{} (map fn dots))))
 
 (defn smallest-rectangle [dots]
   {:min-x (apply min (for [d dots] (first d)))
