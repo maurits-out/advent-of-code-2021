@@ -33,19 +33,17 @@
     (into #{} (map fn dots))))
 
 (defn smallest-rectangle [dots]
-  {:min-x (apply min (for [d dots] (first d)))
-   :min-y (apply min (for [d dots] (second d)))
-   :max-x (apply max (for [d dots] (first d)))
+  {:max-x (apply max (for [d dots] (first d)))
    :max-y (apply max (for [d dots] (second d)))})
 
-(defn row2str [dots y min-x max-x]
-  (apply str (for [x (range min-x (inc max-x))]
+(defn row2str [dots y max-x]
+  (apply str (for [x (range (inc max-x))]
                (if (contains? (into #{} dots) [x y]) "#" " "))))
 
 (defn plot-rows [dots]
-  (let [{:keys [min-x min-y max-x max-y]} (smallest-rectangle dots)]
-    (for [y (range min-y (inc max-y))]
-      (row2str dots y min-x max-x))))
+  (let [{:keys [max-x max-y]} (smallest-rectangle dots)]
+    (for [y (range (inc max-y))]
+      (row2str dots y max-x))))
 
 (defn plot [dots]
   (string/join "\n" (plot-rows dots)))
