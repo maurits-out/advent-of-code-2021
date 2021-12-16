@@ -28,7 +28,7 @@
     (let [marker (first b)
           literal-data (take 4 (next b))]
       (if (= marker \0)
-        {:number (convert-binary (concat binary-number literal-data)), :remaining-bits (drop 5 b)}
+        [(convert-binary (concat binary-number literal-data)) (drop 5 b)]
         (recur (drop 5 b) (concat binary-number literal-data))))))
 
 (defn parse-packets [bits]
@@ -36,34 +36,33 @@
          packets []]
     (if (< (count b) 6)
       packets
-      (let [{:keys [packet remaining-bits]} (parse-packet b)]
+      (let [[packet remaining-bits] (parse-packet b)]
         (recur remaining-bits (conj packets packet))))))
 
 (defn parse-n-packets [n bits]
   (loop [b bits
          result []]
     (if (= (count result) n)
-      {:sub-packets result, :remaining-bits b}
-      (let [{:keys [packet remaining-bits]} (parse-packet b)]
+      [result b]
+      (let [[packet remaining-bits] (parse-packet b)]
         (recur remaining-bits (conj result packet))))))
 
-(defn parse-operator [binary]
-  (let [length-type-id (first binary)]
+(defn parse-operator [bits]
+  (let [length-type-id (first bits)]
     (case length-type-id
-      \0 (let [length (convert-binary (take 15 (next binary)))
-               sub-packets (parse-packets (take length (drop 16 binary)))]
-           {:sub-packets sub-packets, :remaining-bits (drop (+ 16 length) binary)})
-      \1 (let [n (convert-binary (take 11 (next binary)))
-               {:keys [sub-packets remaining-bits]} (parse-n-packets n (drop 12 binary))]
-           {:sub-packets sub-packets, :remaining-bits remaining-bits}))))
+      \0 (let [length (convert-binary (take 15 (next bits)))
+               sub-packets (parse-packets (take length (drop 16 bits)))]
+           [sub-packets (drop (+ 16 length) bits)])
+      \1 (let [n (convert-binary (take 11 (next bits)))]
+           (parse-n-packets n (drop 12 bits))))))
 
 (defn parse-packet [bits]
   (let [packet (parse-packet-header bits)]
     (case (:type packet)
-      4 (let [{:keys [number remaining-bits]} (parse-literal (drop 6 bits))]
-          {:packet (assoc packet :payload number) :remaining-bits remaining-bits})
-      (let [{:keys [sub-packets remaining-bits]} (parse-operator (drop 6 bits))]
-        {:packet (assoc packet :payload sub-packets) :remaining-bits remaining-bits}))))
+      4 (let [[number remaining-bits] (parse-literal (drop 6 bits))]
+          [(assoc packet :payload number) remaining-bits])
+      (let [[sub-packets remaining-bits] (parse-operator (drop 6 bits))]
+        [(assoc packet :payload sub-packets) remaining-bits]))))
 
 (defn evaluate [{:keys [type payload]}]
   (case type
@@ -82,6 +81,6 @@
 (defn -main []
   (let [root-packet (->> (read-input)
                          parse-packet
-                         :packet)]
+                         first)]
     (println "Part 1:" (sum-of-versions root-packet))
     (println "Part 2:" (evaluate root-packet))))
