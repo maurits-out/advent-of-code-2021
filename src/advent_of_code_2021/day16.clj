@@ -8,10 +8,7 @@
 (defn read-input []
   (->> (io/resource "input-16.txt")
        slurp
-       string/trim-newline))
-
-(defn to-binary [input]
-  (->> input
+       string/trim-newline
        (map hex->bin)
        (apply concat)))
 
@@ -83,7 +80,8 @@
   (+ version (if (not= type 4) (apply + (map sum-of-versions payload)) 0)))
 
 (defn -main []
-  (let [binary (to-binary (read-input))
-        root-packet (:packet (parse-packet binary))]
+  (let [root-packet (->> (read-input)
+                         parse-packet
+                         :packet)]
     (println "Part 1:" (sum-of-versions root-packet))
     (println "Part 2:" (evaluate root-packet))))
