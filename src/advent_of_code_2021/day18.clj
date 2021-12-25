@@ -2,124 +2,141 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as string]))
 
-(defn re-pos [re s]
-  (loop [m (re-matcher re s)
-         res {}]
+(defn re-pos
+  "Utility method for regular expression re matches and their position in s."
+  [re s]
+  (loop [m (re-matcher re s), res {}]
     (if (.find m)
       (recur m (assoc res (.start m) (.group m)))
       res)))
 
-(defn is-pair-of-regular-numbers?
-  "Check if the substring of s starting at position idx is a pair of regular numbers [x,y] and returns a pair containing the index and the pair itself."
-  [s idx]
-  (let [m (re-pos #"(\[\d+,\d+\])" (subs s idx))]
+(defn pair-of-regular-numbers?
+  "Check if the substring of s starting at position pos is a pair of regular numbers [x,y] and returns a vector containing the position and the pair itself."
+  [s pos]
+  (let [m (re-pos #"\[\d+,\d+\]" (subs s pos))]
     (if (contains? m 0)
-      [idx (get m 0)]
+      [pos (get m 0)]
       nil)))
 
-(defn find-pair-of-regular-numbers-nested-inside-four-pairs [s]
-  (loop [idx 0
-         depth 0]
+(defn first-pair-of-regular-numbers-nested-inside-4-pairs [s]
+  "Looks up the first pair of regular numbers in s at level 4. Returns a vector containing the position and the pair."
+  (loop [pos 0, depth 0]
     (cond
-      (= idx (count s)) nil
-      (= (nth s idx) \[) (if (and (= depth 4) (is-pair-of-regular-numbers? s idx))
-                           (is-pair-of-regular-numbers? s idx)
-                           (recur (inc idx) (inc depth)))
-      (= (nth s idx) \]) (recur (inc idx) (dec depth))
-      :else (recur (inc idx) depth))))
+      (= pos (count s)) nil
+      (and (= (nth s pos) \[) (= depth 4)) (or (pair-of-regular-numbers? s pos) (recur (inc pos) (inc depth)))
+      (= (nth s pos) \[) (recur (inc pos) (inc depth))
+      (= (nth s pos) \]) (recur (inc pos) (dec depth))
+      :else (recur (inc pos) depth))))
 
-(defn extract-numbers-from-pair [s idx]
-  (let [[_ first second] (re-matches #"\[(\d+),(\d+)\].*" (subs s idx))]
+(defn extract-numbers-from-pair
+  "Returns a vector containing the numbers in a pair [x,y] at position pos in s."
+  [s pos]
+  (let [[_ first second] (re-matches #"\[(\d+),(\d+)\].*" (subs s pos))]
     [(Integer/parseInt first) (Integer/parseInt second)]))
 
 (defn find-number-left-from
-  "Returns a vector consisting of the index and the value of the right-most number in the substring of s starting at 0 up to (not-including) pair-idx"
-  [s pair-idx]
-  (let [m (re-pos #"(\d+)" (subs s 0 pair-idx))]
+  "Returns a vector containing the position and the value of the right-most number in the substring of s starting at 0 up to (not-including) end"
+  [s end]
+  (let [m (re-pos #"\d+" (subs s 0 end))]
     (if (empty? m)
       nil
-      (let [[idx number] (apply max-key key m)]
-        [idx number]))))
+      (let [[pos number] (apply max-key key m)]
+        [pos number]))))
 
 (defn find-number-right-from
-  "Returns a vector consisting of the index and the value of the left-most number in the substring of s starting at pair-idx"
-  [s pair-idx]
-  (let [m (re-pos #"(\d+)" (subs s pair-idx))]
+  "Returns a vector consisting of the index and the value of the left-most number in the substring of s starting at start"
+  [s start]
+  (let [m (re-pos #"\d+" (subs s start))]
     (if (empty? m)
       nil
       (let [[idx number] (apply min-key key m)]
-        [(+ pair-idx idx) number]))))
+        [(+ start idx) number]))))
 
-(defn explode-pair [snailfish [pos pair-to-explode]]
-  (let [[pos-number-left number-left] (find-number-left-from snailfish pos)
-        [pos-number-right number-right] (find-number-right-from snailfish (+ pos (count pair-to-explode)))
-        [exploding-number-left exploding-number-right] (extract-numbers-from-pair snailfish pos)
+(defn explode-pair
+  "Explodes the pair pair-to-explode in snail-fish at position pos"
+  [snail-fish [pos pair-to-explode]]
+  (let [[pos-number-left number-left] (find-number-left-from snail-fish pos)
+        [pos-number-right number-right] (find-number-right-from snail-fish (+ pos (count pair-to-explode)))
+        [exploding-number-left exploding-number-right] (extract-numbers-from-pair snail-fish pos)
         explode-to-right (if pos-number-right
-                           (str (subs snailfish 0 pos-number-right) (+ (Integer/parseInt number-right) exploding-number-right) (subs snailfish (+ pos-number-right (count number-right))))
-                           snailfish)
-        replace-exploding-pair (str (subs snailfish 0 pos) "0" (subs explode-to-right (+ pos (count pair-to-explode))))]
-    (if pos-number-left
-      (str (subs snailfish 0 pos-number-left) (+ (Integer/parseInt number-left) exploding-number-left) (subs replace-exploding-pair (+ pos-number-left (count number-left))))
-      replace-exploding-pair)))
+                           (str (subs snail-fish 0 pos-number-right)
+                                (+ (Integer/parseInt number-right) exploding-number-right)
+                                (subs snail-fish (+ pos-number-right (count number-right))))
+                           snail-fish)
+        replace-exploding-pair (str (subs snail-fish 0 pos)
+                                    "0"
+                                    (subs explode-to-right (+ pos (count pair-to-explode))))
+        explode-to-left (if pos-number-left
+                          (str (subs snail-fish 0 pos-number-left)
+                               (+ (Integer/parseInt number-left) exploding-number-left)
+                               (subs replace-exploding-pair (+ pos-number-left (count number-left))))
+                          replace-exploding-pair)]
+    explode-to-left))
 
-(defn split [snailfish]
-  (let [m (re-pos #"(\d{2})" snailfish)]
+(defn number->pair [s]
+  (let [number (Integer/parseInt s)]
+    (str "[" (quot number 2) "," (- number (quot number 2)) "]")))
+
+(defn split
+  "Performs the split operation if possible"
+  [snail-fish]
+  (let [m (re-pos #"\d{2}" snail-fish)]
     (if (empty? m)
-      snailfish
-      (let [[idx number-str] (apply min-key key m)
-            number (Integer/parseInt number-str)]
-        (str (subs snailfish 0 idx) "[" (quot number 2) "," (- number (quot number 2)) "]" (subs snailfish (+ idx 2)))))))
+      snail-fish
+      (let [[pos s] (apply min-key key m)]
+        (str (subs snail-fish 0 pos) (number->pair s) (subs snail-fish (+ pos 2)))))))
 
-(defn reduce-action [snailfish]
-  (let [pair-to-explode (find-pair-of-regular-numbers-nested-inside-four-pairs snailfish)]
-    (if (not (nil? pair-to-explode))
-      (explode-pair snailfish pair-to-explode)
-      (split snailfish))))
+(defn single-reduce [snail-fish]
+  "Executes a single reduce"
+  (if-let [pair-to-explode (first-pair-of-regular-numbers-nested-inside-4-pairs snail-fish)]
+    (explode-pair snail-fish pair-to-explode)
+    (split snail-fish)))
 
-(defn reduce-snailfish [snailfish]
-  (loop [current snailfish]
-    (let [updated (reduce-action current)]
+(defn reduce-snail-fish [snail-fish]
+  (loop [current snail-fish]
+    (let [updated (single-reduce current)]
       (if (= current updated)
         current
         (recur updated)))))
 
-(defn add-snailfishes [snailfish1 snailfish2]
-  (str "[" snailfish1 "," snailfish2 "]"))
+(defn add [snail-fish1 snail-fish2]
+  (let [combined (str "[" snail-fish1 "," snail-fish2 "]")]
+    (reduce-snail-fish combined)))
 
-(defn add-snailfish-list [lines]
-  (reduce (fn [sf1 sf2] (reduce-snailfish (add-snailfishes sf1 sf2))) (first lines) (rest lines)))
-
-(defn add-snailfish-list-from-file [file]
-  (->> (io/resource file)
+(defn sum-snail-fishes [file-name]
+  (->> (io/resource file-name)
        slurp
        string/split-lines
-       add-snailfish-list))
+       (reduce add)))
 
 (declare magnitude-of-pair)
 
-(defn parse-magnitude-subexpression [snailfish pos]
-  (let [current (nth snailfish pos)]
+(defn magnitude-subexpression [snail-fish pos]
+  (let [current (nth snail-fish pos)]
     (if (Character/isDigit ^char current)
       [(- (int current) (int \0)) (inc pos)]
-      (magnitude-of-pair snailfish pos))))
+      (magnitude-of-pair snail-fish pos))))
 
-(defn magnitude-of-pair [snailfish pos]
-  (let [[left i] (parse-magnitude-subexpression snailfish (inc pos))
-        [right j] (parse-magnitude-subexpression snailfish (inc i))]
+(defn magnitude-of-pair [snail-fish pos]
+  (let [[left i] (magnitude-subexpression snail-fish (inc pos))
+        [right j] (magnitude-subexpression snail-fish (inc i))]
     [(+ (* 3 left) (* 2 right)) (inc j)]))
 
+(defn magnitude [snail-fish]
+  (first (magnitude-of-pair snail-fish 0)))
+
 (defn part1 []
-  (let [final-sum (add-snailfish-list-from-file "input-18.txt")]
-    (first (magnitude-of-pair final-sum 0))))
+  (magnitude (sum-snail-fishes "input-18.txt")))
 
 (defn part2 []
-  (let [snailfishes (->> (io/resource "input-18.txt")
-                         slurp
-                         string/split-lines)]
-    (apply max (for [sf1 snailfishes
-                     sf2 snailfishes
-                     :when (not= sf1 sf2)]
-                 (first (magnitude-of-pair (reduce-snailfish (add-snailfishes sf1 sf2)) 0))))))
+  (let [snail-fishes (->> (io/resource "input-18.txt")
+                          slurp
+                          string/split-lines)]
+    (apply max (for [sf1 snail-fishes, sf2 snail-fishes
+                     :when (not= sf1 sf2)
+                     :let [sum (add sf1 sf2)]]
+                 (magnitude sum)))))
+
 (defn -main []
   (println "Part 1:" (part1))
   (println "Part 2:" (part2)))

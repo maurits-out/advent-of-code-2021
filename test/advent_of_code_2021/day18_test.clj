@@ -1,16 +1,14 @@
 (ns advent-of-code-2021.day18-test
   (:require [clojure.test :refer :all]
-            [advent_of_code_2021.day18 :refer :all]
-            [clojure.java.io :as io]
-            [clojure.string :as string]))
+            [advent_of_code_2021.day18 :refer :all]))
 
 (deftest day18
   (testing "day 18"
-    (is (= [4 "[9,8]"] (find-pair-of-regular-numbers-nested-inside-four-pairs "[[[[[9,8],1],2],3],4]")))
-    (is (= [12 "[3,2]"] (find-pair-of-regular-numbers-nested-inside-four-pairs "[7,[6,[5,[4,[3,2]]]]]")))
-    (is (= [12 "[13,2]"] (find-pair-of-regular-numbers-nested-inside-four-pairs "[7,[6,[5,[4,[13,2]]]]]")))
-    (is (= [24 "[3,2]"] (find-pair-of-regular-numbers-nested-inside-four-pairs "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")))
-    (is (nil? (find-pair-of-regular-numbers-nested-inside-four-pairs "[[1,9],[8,5]]")))
+    (is (= [4 "[9,8]"] (first-pair-of-regular-numbers-nested-inside-4-pairs "[[[[[9,8],1],2],3],4]")))
+    (is (= [12 "[3,2]"] (first-pair-of-regular-numbers-nested-inside-4-pairs "[7,[6,[5,[4,[3,2]]]]]")))
+    (is (= [12 "[13,2]"] (first-pair-of-regular-numbers-nested-inside-4-pairs "[7,[6,[5,[4,[13,2]]]]]")))
+    (is (= [24 "[3,2]"] (first-pair-of-regular-numbers-nested-inside-4-pairs "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")))
+    (is (nil? (first-pair-of-regular-numbers-nested-inside-4-pairs "[[1,9],[8,5]]")))
 
     (is (= [13 56] (extract-numbers-from-pair "[7,[6,[5,[4,[13,56]]]]]" 12)))
 
@@ -32,20 +30,17 @@
     (is (= "[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]" (split "[[[[0,7],4],[[7,8],[0,13]]],[1,1]]")))
     (is (= "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]" (split "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")))
 
-    (is (= "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]" (reduce-snailfish "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")))
+    (is (= "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]" (add "[[[[4,3],4],4],[7,[[8,4],9]]]" "[1,1]")))
 
-    (is (= "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]" (add-snailfishes "[[[[4,3],4],4],[7,[[8,4],9]]]" "[1,1]")))
+    (is (= "[[[[1,1],[2,2]],[3,3]],[4,4]]" (sum-snail-fishes "example-18-1.txt")))
+    (is (= "[[[[3,0],[5,3]],[4,4]],[5,5]]" (sum-snail-fishes "example-18-2.txt")))
+    (is (= "[[[[5,0],[7,4]],[5,5]],[6,6]]" (sum-snail-fishes "example-18-3.txt")))
+    (is (= "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]" (sum-snail-fishes "example-18-4.txt")))
 
-    (is (= "[[[[1,1],[2,2]],[3,3]],[4,4]]" (add-snailfish-list-from-file "example-18-1.txt")))
-    (is (= "[[[[3,0],[5,3]],[4,4]],[5,5]]" (add-snailfish-list-from-file "example-18-2.txt")))
-    (is (= "[[[[5,0],[7,4]],[5,5]],[6,6]]" (add-snailfish-list-from-file "example-18-3.txt")))
-    (is (= "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]" (add-snailfish-list-from-file "example-18-4.txt")))
-
-    (is (= 29 (first (magnitude-of-pair "[9,1]" 0))))
-    (is (= 143 (first (magnitude-of-pair "[[1,2],[[3,4],5]]" 0))))
-    (is (= 1384 (first (magnitude-of-pair "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]" 0))))
-    (is (= 445 (first (magnitude-of-pair "[[[[1,1],[2,2]],[3,3]],[4,4]]" 0))))
-    (is (= 791 (first (magnitude-of-pair "[[[[3,0],[5,3]],[4,4]],[5,5]]" 0))))
-    (is (= 1137 (first (magnitude-of-pair "[[[[5,0],[7,4]],[5,5]],[6,6]]" 0))))
-    (is (= 3488 (first (magnitude-of-pair "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]" 0))))
-    ))
+    (is (= 29 (magnitude "[9,1]")))
+    (is (= 143 (magnitude "[[1,2],[[3,4],5]]")))
+    (is (= 1384 (magnitude "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")))
+    (is (= 445 (magnitude "[[[[1,1],[2,2]],[3,3]],[4,4]]")))
+    (is (= 791 (magnitude "[[[[3,0],[5,3]],[4,4]],[5,5]]")))
+    (is (= 1137 (magnitude "[[[[5,0],[7,4]],[5,5]],[6,6]]")))
+    (is (= 3488 (magnitude "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")))))
