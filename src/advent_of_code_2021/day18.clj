@@ -111,9 +111,9 @@
 (declare magnitude-of-pair)
 
 (defn magnitude-subexpression [snail-fish pos]
-  (let [current (nth snail-fish pos)]
-    (if (Character/isDigit ^char current)
-      [(- (int current) (int \0)) (inc pos)]
+  (let [ch (nth snail-fish pos)]
+    (if (Character/isDigit ^char ch)
+      [(- (int ch) (int \0)) (inc pos)]
       (magnitude-of-pair snail-fish pos))))
 
 (defn magnitude-of-pair [snail-fish pos]
