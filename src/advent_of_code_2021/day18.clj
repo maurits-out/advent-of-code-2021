@@ -72,7 +72,7 @@
                           replace-exploding-pair)]
     explode-to-left))
 
-(defn number->pair [s]
+(defn split-number [s]
   (let [number (Integer/parseInt s)]
     (str "[" (quot number 2) "," (- number (quot number 2)) "]")))
 
@@ -83,7 +83,7 @@
     (if (empty? m)
       snail-fish
       (let [[pos s] (apply min-key key m)]
-        (str (subs snail-fish 0 pos) (number->pair s) (subs snail-fish (+ pos 2)))))))
+        (str (subs snail-fish 0 pos) (split-number s) (subs snail-fish (+ pos 2)))))))
 
 (defn single-reduce [snail-fish]
   "Executes a single reduce"
