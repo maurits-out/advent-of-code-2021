@@ -40,8 +40,7 @@
   (let [m (re-pos #"\d+" (subs s 0 end))]
     (if (empty? m)
       nil
-      (let [[pos number] (apply max-key key m)]
-        [pos number]))))
+      (apply max-key key m))))
 
 (defn find-number-right-from
   "Returns a vector consisting of the index and the value of the left-most number in the substring of s starting at start"
