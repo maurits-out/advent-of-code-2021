@@ -10,21 +10,18 @@ object BinaryDiagnostic {
       Source.fromInputStream(stream).getLines().toList
     }
 
-  private def part1(report: List[String]): Unit = {
+  private def part1(report: List[String]): Unit =
     val consumption = new PowerConsumption(report)
     val answer = consumption.calculate()
     println(s"Part 1: $answer")
-  }
 
-  private def part2(report: List[String]): Unit = {
+  private def part2(report: List[String]): Unit =
     val rating = new LifeSupportRating(report)
     val answer = rating.calculate()
     println(s"Part 2: $answer")
-  }
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     val report = readReport()
     part1(report)
     part2(report)
-  }
 }

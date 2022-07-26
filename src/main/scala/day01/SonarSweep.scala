@@ -9,19 +9,17 @@ def readMeasurements(): List[Int] =
   }
 
 @main
-def part1(): Unit = {
+def part1(): Unit =
   val answer = readMeasurements()
     .sliding(2)
     .count { case Seq(a, b) => a < b }
   println(s"Part 1: $answer")
-}
 
 @main
-def part2(): Unit = {
+def part2(): Unit =
   val answer = readMeasurements()
     .sliding(3)
     .map(_.sum)
     .sliding(2)
     .count { case Seq(a, b) => a < b }
   println(s"Part 2: $answer")
-}

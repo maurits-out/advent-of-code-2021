@@ -37,13 +37,11 @@ object Dive:
       case Command.Down(amount) => state.copy(aim = state.aim + amount)
       case Command.Up(amount) => state.copy(aim = state.aim - amount)
 
-  private def followCourse(course: List[Command], update: (State, Command) => State): Int = {
+  private def followCourse(course: List[Command], update: (State, Command) => State): Int =
     val state = course.foldLeft(State())(update)
     state.outcome
-  }
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     val course = readCourse()
     println(s"Part 1: ${followCourse(course, update1)}")
     println(s"Part 2: ${followCourse(course, update2)}")
-  }
