@@ -18,7 +18,7 @@ object HydrothermalVenture:
   case class Vent(start: Point, end: Point):
     def isHorizontalOrVertical: Boolean = (start.x == end.x) || (start.y == end.y)
 
-    def points: Seq[Point] =
+    def points: List[Point] =
       val d = Point((end.x - start.x).sign, (end.y - start.y).sign)
 
       @tailrec
@@ -30,6 +30,8 @@ object HydrothermalVenture:
           points(next, next :: result)
 
       points(start, List(start))
+    end points
+  end Vent
 
   object Vent:
     def parse(v: String): Vent =
@@ -45,8 +47,7 @@ object HydrothermalVenture:
     vents
       .flatMap(_.points)
       .groupMapReduce(identity)(_ => 1)(_ + _)
-      .values
-      .count(_ >= 2)
+      .count((_, count) => count >= 2)
 
   def main(args: Array[String]): Unit =
     val vents = readInput()
@@ -54,3 +55,5 @@ object HydrothermalVenture:
     val answer2 = countOverlappingPoints(vents)
     println(s"Answer part 1: $answer1")
     println(s"Answer part 2: $answer2")
+
+end HydrothermalVenture
