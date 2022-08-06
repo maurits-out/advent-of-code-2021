@@ -10,18 +10,21 @@ def main(): Unit =
   println(s"Part 2: ${simulate(initial, 256)}")
 
 def readInput(): String =
-  Using.resource(getClass.getResourceAsStream("/day06.txt")) { stream =>
-    Source.fromInputStream(stream).mkString.trim
+  Using.resource(getClass.getResourceAsStream("/day06.txt")) {
+    stream => Source.fromInputStream(stream).mkString.trim
   }
 
-def initialState(input: String): Map[Int, Long] = input
-  .split(",")
-  .groupMapReduce(_.toInt)(_ => 1L)(_ + _)
-  .withDefaultValue(0L)
+def initialState(input: String): Map[Int, Long] =
+  input
+    .split(",")
+    .groupMapReduce(_.toInt)(_ => 1L)(_ + _)
+    .withDefaultValue(0L)
 
 def simulate(initial: Map[Int, Long], days: Int) =
-  val end = (1 to days).foldLeft(initial) { (s, _) => nextDay(s) }
-  end.values.sum
+  (1 to days)
+    .foldLeft(initial) { (s, _) => nextDay(s) }
+    .values
+    .sum
 
 def nextDay(state: Map[Int, Long]): Map[Int, Long] =
   Map(
