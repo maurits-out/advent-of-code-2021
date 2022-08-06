@@ -20,22 +20,22 @@ def median(positions: List[Int]): Int =
   else
     (sorted(middle - 1) + sorted(middle)) / 2
 
-def calculateFuelPart1(positions: List[Int]): Int =
+def fuelPart1(positions: List[Int]): Int =
   val m = median(positions)
   positions.map(p => abs(m - p)).sum
 
-def calculateIncreasingFuelCosts(position: Int, average: Int) =
+def increasingFuelCosts(position: Int, average: Int) =
   val diff = abs(average - position)
   (diff * (diff + 1)) / 2
 
 def average(positions: List[Int]): Int = positions.sum / positions.size
 
-def calculateFuelPart2(positions: List[Int]): Int =
+def fuelPart2(positions: List[Int]): Int =
   val avg = average(positions)
-  positions.map(p => calculateIncreasingFuelCosts(p, avg)).sum
+  positions.map(p => increasingFuelCosts(p, avg)).sum
 
 @main
 def main(): Unit =
   val positions = initialPositions(readInput())
-  println(s"Part 1: ${calculateFuelPart1(positions)}")
-  println(s"Part 2: ${calculateFuelPart2(positions)}")
+  println(s"Part 1: ${fuelPart1(positions)}")
+  println(s"Part 2: ${fuelPart2(positions)}")
