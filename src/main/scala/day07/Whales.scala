@@ -24,7 +24,7 @@ def fuelPart1(positions: List[Int]): Int =
   val m = median(positions)
   positions.map(p => abs(m - p)).sum
 
-def increasingFuelCosts(position: Int, average: Int) =
+def increasingFuelCosts(position: Int, average: Int): Int =
   val diff = abs(average - position)
   (diff * (diff + 1)) / 2
 
