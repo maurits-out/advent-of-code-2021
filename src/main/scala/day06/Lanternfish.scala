@@ -24,5 +24,14 @@ def simulate(initial: Map[Int, Long], days: Int) =
   end.values.sum
 
 def nextDay(state: Map[Int, Long]): Map[Int, Long] =
-  val s = (1 to 8).map(d => (d - 1) -> state(d)).toMap
-  s + (6 -> (s(6) + state(0))) + (8 -> state(0))
+  Map(
+    0 -> state(1),
+    1 -> state(2),
+    2 -> state(3),
+    3 -> state(4),
+    4 -> state(5),
+    5 -> state(6),
+    6 -> (state(0) + state(7)),
+    7 -> state(8),
+    8 -> state(0)
+  )
