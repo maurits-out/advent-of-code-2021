@@ -32,7 +32,7 @@ def average(positions: List[Int]): Int = positions.sum / positions.size
 
 def fuelPart2(positions: List[Int]): Int =
   val avg = average(positions)
-  positions.map(p => increasingFuelCosts(p, avg)).sum
+  positions.map(increasingFuelCosts(_, avg)).sum
 
 @main
 def main(): Unit =
