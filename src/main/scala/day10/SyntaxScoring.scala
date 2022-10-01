@@ -1,7 +1,6 @@
 package day10
 
 import scala.annotation.tailrec
-import scala.collection.immutable.::
 import scala.io.Source
 import scala.util.Using
 
