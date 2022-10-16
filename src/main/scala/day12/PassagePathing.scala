@@ -18,18 +18,17 @@ class PassagePathing(input: String):
 
   private def isLarge(cave: String): Boolean = cave.forall(_.isUpper)
 
-  private def countPaths(path: Seq[String] = Seq("start"), secondVisitCheck: Seq[String] => Boolean): Int =
+  private def countPaths(path: Seq[String], secondVisitCheck: Seq[String] => Boolean): Int =
     path.head match
       case "end" => 1
-      case cave => adjacencyList(cave)
-        .collect {
-          case c if isLarge(c) || !path.contains(c) || secondVisitCheck(path) => countPaths(c +: path, secondVisitCheck)
-        }
-        .sum
+      case cave => adjacencyList(cave).collect {
+        case c if (c != "start") && (isLarge(c) || !path.contains(c) || secondVisitCheck(path)) =>
+          countPaths(c +: path, secondVisitCheck)
+      }.sum
 
-  def part1(): Int = countPaths(secondVisitCheck = _ => false)
+  def part1(): Int = countPaths(Seq("start"), _ => false)
 
-  def part2(): Int = countPaths(secondVisitCheck = _.filterNot(isLarge).pipe(path => path.size == path.distinct.size))
+  def part2(): Int = countPaths(Seq("start"), _.filterNot(isLarge).pipe(path => path.size == path.distinct.size))
 end PassagePathing
 
 @main
