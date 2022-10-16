@@ -1,7 +1,5 @@
 package day12
 
-import sun.security.provider.certpath.AdjacencyList
-
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 import scala.io.Source
