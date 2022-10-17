@@ -37,17 +37,14 @@ def parseInput(input: String): (Set[Dot], List[Instruction]) =
   val Array(dots, instructions) = input.split("\n\n")
   (parseDots(dots), parseInstructions(instructions))
 
+def foldDot(d: Int, line: Int): Int =
+  if d > line then line - (d - line) else d
+
 def foldLeft(dots: Set[Dot], line: Int): Set[Dot] =
-  dots.map {
-    case Dot(x, y) if x > line => Dot(x - 2 * (x - line), y)
-    case dot => dot
-  }
+  for dot <- dots yield dot.copy(x = foldDot(dot.x, line))
 
 def foldUp(dots: Set[Dot], line: Int): Set[Dot] =
-  dots.map {
-    case Dot(x, y) if y > line => Dot(x, y - 2 * (y - line))
-    case dot => dot
-  }
+  for dot <- dots yield dot.copy(y = foldDot(dot.y, line))
 
 def applyInstruction(instruction: Instruction, dots: Set[Dot]): Set[Dot] =
   instruction match
