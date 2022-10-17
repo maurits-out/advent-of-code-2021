@@ -1,11 +1,15 @@
 package day13
 
+import day13.Instruction.{Horizontal, Vertical}
+
 import scala.io.Source
 import scala.util.Using
 
 case class Dot(x: Int, y: Int)
 
-case class Instruction(axis: Char, lines: Int)
+enum Instruction:
+  case Horizontal(lines: Int)
+  case Vertical(lines: Int)
 
 def readInput(): String =
   Using.resource(getClass.getResourceAsStream("/day13.txt")) { stream =>
@@ -24,7 +28,8 @@ def parseInstructions(section: String): List[Instruction] =
   section
     .linesIterator
     .map {
-      case s"fold along $a=$l" => Instruction(a(0), l.toInt)
+      case s"fold along x=$l" => Vertical(l.toInt)
+      case s"fold along y=$l" => Horizontal(l.toInt)
     }
     .toList
 
@@ -45,10 +50,9 @@ def foldUp(dots: Set[Dot], line: Int): Set[Dot] =
   }
 
 def applyInstruction(instruction: Instruction, dots: Set[Dot]): Set[Dot] =
-  val Instruction(axis, line) = instruction
-  axis match
-    case 'x' => foldLeft(dots, line)
-    case 'y' => foldUp(dots, line)
+  instruction match
+    case Vertical(line) => foldLeft(dots, line)
+    case Horizontal(line) => foldUp(dots, line)
 
 def applyInstructions(instructions: List[Instruction], dots: Set[Dot]) =
   instructions.foldLeft(dots) {
