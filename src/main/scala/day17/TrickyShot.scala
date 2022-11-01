@@ -11,10 +11,10 @@ class TrickyShot(minX: Int, maxX: Int, minY: Int, maxY: Int):
 
   def part2(): Int =
     val initialVelocityValues =
-      for x <- 0 to maxX
-          y <- minY until -minY
-          if isInTargetRange(x, y)
-      yield (x, y)
+      for initVelX <- 0 to maxX
+          initVelY <- minY until -minY
+          if isInTargetRange(initVelX, initVelY)
+      yield (initVelX, initVelY)
     initialVelocityValues.size
 
   private def isInTargetRange(initVelX: Int, initVelY: Int): Boolean =
