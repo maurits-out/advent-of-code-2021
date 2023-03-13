@@ -12,9 +12,9 @@ class DiracDice(start1: Int, start2: Int):
         case s if s >= 1000 => score.values.min * (roll - 1)
         case _ =>
           val player = 1 - prevPlayer
-          val nextSpace = (space(player) + (3 * roll) + 3) % 10
-          val nextScore = score(player) + nextSpace + 1
-          play(space + (player -> nextSpace), score + (player -> nextScore), roll + 3, player)
+          val newSpace = (space(player) + (3 * roll) + 3) % 10
+          val newScore = score(player) + newSpace + 1
+          play(space + (player -> newSpace), score + (player -> newScore), roll + 3, player)
 
     play(Map(0 -> (start1 - 1), 1 -> (start2 - 1)), Map(0 -> 0, 1 -> 0), 1, 1)
 
@@ -28,8 +28,8 @@ class DiracDice(start1: Int, start2: Int):
         case _ =>
           val w =
             for (roll, count) <- rollCount
-                nextSpace = (space1 + roll) % 10
-                (c2, c1) = countWins(space2, score2, nextSpace, score1 + nextSpace + 1)
+                newSpace = (space1 + roll) % 10
+                (c2, c1) = countWins(space2, score2, newSpace, score1 + newSpace + 1)
             yield (count * c1, count * c2)
           (w.map(_._1).sum, w.map(_._2).sum)
 
