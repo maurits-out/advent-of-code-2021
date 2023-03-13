@@ -16,7 +16,7 @@ class DiracDice(start1: Int, start2: Int):
         val nextScore = score(player) + nextSpace + 1
         play(space + (player -> nextSpace), score + (player -> nextScore), roll + 3, player)
 
-    play(space = Map(0 -> (start1 - 1), 1 -> (start2 - 1)), score = Map(0 -> 0, 1 -> 0), roll = 1, prevPlayer = 1)
+    play(Map(0 -> (start1 - 1), 1 -> (start2 - 1)), Map(0 -> 0, 1 -> 0), 1, 1)
 
 
   def part2(): Long =
