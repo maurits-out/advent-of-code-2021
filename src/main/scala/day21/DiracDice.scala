@@ -26,12 +26,12 @@ class DiracDice(start1: Int, start2: Int):
       score2 match
         case s if s >= 21 => (0, 1)
         case _ =>
-          val w =
-            for (roll, count) <- rollCount
-                newSpace = (space1 + roll) % 10
-                (c2, c1) = countWins(space2, score2, newSpace, score1 + newSpace + 1)
-            yield (count * c1, count * c2)
-          (w.map(_._1).sum, w.map(_._2).sum)
+          (for (roll, count) <- rollCount
+               newSpace = (space1 + roll) % 10
+               (c2, c1) = countWins(space2, score2, newSpace, score1 + newSpace + 1)
+          yield (count * c1, count * c2)).unzip match {
+            case (w1, w2) => (w1.sum, w2.sum)
+          }
 
     val (w1, w2) = countWins(start1 - 1, 0, start2 - 1, 0)
     w1.max(w2)
