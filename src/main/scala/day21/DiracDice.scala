@@ -12,7 +12,7 @@ class DiracDice(start1: Int, start2: Int):
         case s if s >= 1000 => score.values.min * (roll - 1)
         case _ =>
           val player = 1 - prevPlayer
-          val newSpace = (space(player) + (3 * roll) + 3) % 10
+          val newSpace = (space(player) + 3 * (roll + 1)) % 10
           val newScore = score(player) + newSpace + 1
           play(space + (player -> newSpace), score + (player -> newScore), roll + 3, player)
 
