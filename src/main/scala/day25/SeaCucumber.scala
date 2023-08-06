@@ -19,6 +19,7 @@ class SeaCucumber(input: String):
         count
       else
         stepUntilSeaCucumbersStopMoving(nextState, count + 1)
+    end stepUntilSeaCucumbersStopMoving
 
     stepUntilSeaCucumbersStopMoving(parseInput(), 1)
   end part1
@@ -30,6 +31,7 @@ class SeaCucumber(input: String):
         column = if location.column == state.width - 1 then 0 else location.column + 1
       )
       if state.eastFacing.contains(next) || state.southFacing.contains(next) then location else next
+    end moveEastIfAllowed
 
     state.copy(eastFacing = state.eastFacing.map(moveEastIfAllowed))
   end stepEast
