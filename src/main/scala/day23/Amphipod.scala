@@ -21,11 +21,15 @@ enum AmphipodType(val energy: Int):
 case class Amphipod(location: Location, amphipodType: AmphipodType) {
 
   def heuristicDistanceToDestinationSiteRoom(): Int = {
-    if ((location.row >= 2) && location.column == Burrow.SiteRoomColumns(amphipodType)) {
+    if (!isInHallway && location.column == Burrow.SiteRoomColumns(amphipodType)) {
       0
     } else {
       amphipodType.energy * (location.row + Math.abs(Burrow.SiteRoomColumns(amphipodType) - location.column))
     }
+  }
+
+  def isInHallway: Boolean = {
+    location.row == 1
   }
 }
 
@@ -73,7 +77,7 @@ case class State(amphipods: Set[Amphipod]) {
       }.toMap
 
     val fromHallwayToSideRoom = amphipods
-      .filter(_.location.row == 1)
+      .filter(_.isInHallway)
       .filter {
         a => {
           Burrow.SiteRooms(a.amphipodType).forall { location =>
@@ -109,9 +113,8 @@ case class State(amphipods: Set[Amphipod]) {
   }
 
   def isEndState: Boolean = {
-    amphipods.forall { case Amphipod(location, amphipodType) =>
-      (location.row == 2 || location.row == 3) &&
-        location.column == Burrow.SiteRoomColumns(amphipodType)
+    amphipods.forall { case a@Amphipod(location, amphipodType) =>
+      !a.isInHallway && location.column == Burrow.SiteRoomColumns(amphipodType)
     }
   }
 }
