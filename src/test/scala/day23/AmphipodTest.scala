@@ -143,7 +143,7 @@ class AmphipodTest extends Specification {
     "return all spaces except spaces above side room" in {
       val state = State(amphipods = Set())
 
-      state.findAvailableLocationsInHallway(6) must beEqualTo(Set(
+      state.findAvailableLocationsInHallway(Location(1, 6)) must beEqualTo(Set(
         Location(1, 1),
         Location(1, 2),
         Location(1, 4),
@@ -159,7 +159,7 @@ class AmphipodTest extends Specification {
         Amphipod(Location(1, 10), Amber)
       ))
 
-      state.findAvailableLocationsInHallway(6) must beEqualTo(Set(
+      state.findAvailableLocationsInHallway(Location(1, 6)) must beEqualTo(Set(
         Location(1, 8)
       ))
     }
@@ -354,6 +354,43 @@ class AmphipodTest extends Specification {
       nextStates must beEqualTo(Map(
         State(Set(Amphipod(Location(3, 9), Desert))) -> 10000,
       ))
+    }
+  }
+
+  "calculateLeastEnergyToOrganizeAmphipods" should {
+
+    "return least amount of energy for example" in {
+      val amount = calculateLeastEnergyToOrganizeAmphipods(
+        State(amphipods = Set(
+          Amphipod(Location(2, 3), Bronze),
+          Amphipod(Location(3, 3), Amber),
+          Amphipod(Location(2, 5), Copper),
+          Amphipod(Location(3, 5), Desert),
+          Amphipod(Location(2, 7), Bronze),
+          Amphipod(Location(3, 7), Copper),
+          Amphipod(Location(2, 9), Desert),
+          Amphipod(Location(3, 9), Amber),
+        ))
+      )
+
+      amount must beEqualTo(12521)
+    }
+
+    "return least amount of energy for part 1" in {
+      val amount = calculateLeastEnergyToOrganizeAmphipods(
+        State(amphipods = Set(
+          Amphipod(Location(2, 3), Desert),
+          Amphipod(Location(3, 3), Bronze),
+          Amphipod(Location(2, 5), Desert),
+          Amphipod(Location(3, 5), Copper),
+          Amphipod(Location(2, 7), Bronze),
+          Amphipod(Location(3, 7), Amber),
+          Amphipod(Location(2, 9), Amber),
+          Amphipod(Location(3, 9), Copper),
+        ))
+      )
+
+      amount must beEqualTo(16244)
     }
   }
 }

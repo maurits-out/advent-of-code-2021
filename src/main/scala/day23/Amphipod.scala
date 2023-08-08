@@ -116,32 +116,6 @@ case class State(amphipods: Set[Amphipod]) {
   }
 }
 
-object State {
-
-  /*
-  #############
-  #...........#
-  ###D#D#B#A###
-    #B#C#A#C#
-    #########
-   */
-
-
-  def startState(): State =
-    State(
-      amphipods = Set(
-        Amphipod(Location(2, 3), Desert),
-        Amphipod(Location(3, 3), Bronze),
-        Amphipod(Location(2, 5), Desert),
-        Amphipod(Location(3, 5), Copper),
-        Amphipod(Location(2, 7), Bronze),
-        Amphipod(Location(3, 7), Amber),
-        Amphipod(Location(2, 9), Amber),
-        Amphipod(Location(3, 9), Copper),
-      )
-    )
-}
-
 object Burrow {
   val SiteRooms: Map[AmphipodType, Set[Location]] = Map(
     Amber -> Set(Location(2, 3), Location(3, 3)),
@@ -162,7 +136,7 @@ object Burrow {
   val Forbidden: Set[Location] = Set(Location(1, 3), Location(1, 5), Location(1, 7), Location(1, 9))
 }
 
-def calculateLeastEnergyToOrganizeAmphipods(): Int = {
+def calculateLeastEnergyToOrganizeAmphipods(startState: State): Int = {
 
   val fScore: mutable.Map[State, Int] = mutable.HashMap()
   val gScore: mutable.Map[State, Int] = mutable.HashMap().withDefaultValue(Int.MaxValue)
@@ -193,24 +167,11 @@ def calculateLeastEnergyToOrganizeAmphipods(): Int = {
   }
 
 
-  val start = State.startState()
-  fScore(start) = start.heuristicDistanceToEndState()
-  gScore(start) = 0
-  open.enqueue(start)
+  fScore(startState) = startState.heuristicDistanceToEndState()
+  gScore(startState) = 0
+  open.enqueue(startState)
 
   aStar()
 }
 
-def time[R](block: => R): R = {
-  val t0 = System.nanoTime()
-  val result = block    // call-by-name
-  val t1 = System.nanoTime()
-  println("Elapsed time: " + (t1 - t0) + "ns")
-  result
-}
 
-// 155 seconds
-@main
-def main(): Unit =
-  val result = time { calculateLeastEnergyToOrganizeAmphipods() }
-  println(result + " === 16244")
