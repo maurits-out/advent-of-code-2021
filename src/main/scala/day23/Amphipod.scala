@@ -12,19 +12,19 @@ case class Location(row: Int, column: Int) {
   }
 }
 
-enum AmphipodType(val energy: Int):
-  case Amber extends AmphipodType(1)
-  case Bronze extends AmphipodType(10)
-  case Copper extends AmphipodType(100)
-  case Desert extends AmphipodType(1000)
+enum AmphipodType(val energy: Int, val destinationColumn: Int):
+  case Amber extends AmphipodType(1, 3)
+  case Bronze extends AmphipodType(10, 5)
+  case Copper extends AmphipodType(100, 7)
+  case Desert extends AmphipodType(1000, 9)
 
 case class Amphipod(location: Location, amphipodType: AmphipodType) {
 
   def heuristicDistanceToDestinationSiteRoom(): Int = {
-    if (!isInHallway && location.column == Burrow.SiteRoomColumns(amphipodType)) {
+    if (!isInHallway && location.column == amphipodType.destinationColumn) {
       0
     } else {
-      amphipodType.energy * (location.row + Math.abs(Burrow.SiteRoomColumns(amphipodType) - location.column))
+      amphipodType.energy * (location.row + Math.abs(amphipodType.destinationColumn - location.column))
     }
   }
 
@@ -66,7 +66,7 @@ case class State(amphipods: Set[Amphipod]) {
     val fromSideRoomToHallway = amphipods
       .filter { a =>
         a.location.row == 2 || (a.location.row == 3 && !occupied.contains(Location(2, a.location.column))) &&
-          a.location.column != Burrow.SiteRoomColumns(a.amphipodType)
+          a.location.column != a.amphipodType.destinationColumn
       }
       .flatMap { a =>
         val availableLocationsInHallway = findAvailableLocationsInHallway(Location(1, a.location.column))
@@ -88,7 +88,7 @@ case class State(amphipods: Set[Amphipod]) {
         }
       }
       .filter { a =>
-        val destColumn = Burrow.SiteRoomColumns(a.amphipodType)
+        val destColumn = a.amphipodType.destinationColumn
         val rowFree = if (a.location.column < destColumn) {
           (a.location.column + 1).until(destColumn).forall(c => !occupied.contains(Location(1, c)))
         } else {
@@ -98,9 +98,9 @@ case class State(amphipods: Set[Amphipod]) {
       }
       .map {
         a => {
-          val location = Location(3, Burrow.SiteRoomColumns(a.amphipodType))
+          val location = Location(3, a.amphipodType.destinationColumn)
           val newLocation = if (occupied.contains(location)) {
-            Location(2, Burrow.SiteRoomColumns(a.amphipodType))
+            Location(2, a.amphipodType.destinationColumn)
           } else {
             location
           }
@@ -114,7 +114,7 @@ case class State(amphipods: Set[Amphipod]) {
 
   def isEndState: Boolean = {
     amphipods.forall { case a@Amphipod(location, amphipodType) =>
-      !a.isInHallway && location.column == Burrow.SiteRoomColumns(amphipodType)
+      !a.isInHallway && location.column == amphipodType.destinationColumn
     }
   }
 }
@@ -125,13 +125,6 @@ object Burrow {
     Bronze -> Set(Location(2, 5), Location(3, 5)),
     Copper -> Set(Location(2, 7), Location(3, 7)),
     Desert -> Set(Location(2, 9), Location(3, 9)),
-  )
-
-  val SiteRoomColumns: Map[AmphipodType, Int] = Map(
-    Amber -> 3,
-    Bronze -> 5,
-    Copper -> 7,
-    Desert -> 9,
   )
 
   val AllSpaces: Set[Location] = (1 to 11).map(Location(1, _)).toSet union SiteRooms.values.reduce(_ union _)
