@@ -39,23 +39,23 @@ case class State(amphipods: Set[Amphipod]) {
     amphipods.toSeq.map(_.heuristicDistanceToDestinationSiteRoom()).sum
   }
 
-  def findAvailableLocationsInHallway(from: Location): Set[Location] = {
+  def findAvailableLocationsInHallway(fromColumn: Int): Set[Location] = {
 
-    val occupied = amphipods.map(_.location)
+    val occupied = amphipods.filter(_.isInHallway).map(_.location.column)
 
     @tailrec
-    def findAvailableSpotsInHallway(current: Location, step: Int, spots: Set[Location]): Set[Location] = {
-      if !Burrow.AllSpaces.contains(current) || occupied.contains(current) then {
+    def findAvailableSpotsInHallway(currentColumn: Int, step: Int, spots: Set[Location]): Set[Location] = {
+      if currentColumn < 1 || currentColumn > 11 || occupied.contains(currentColumn) then {
         spots
-      } else if Burrow.Forbidden.contains(current) then {
-        findAvailableSpotsInHallway(current.copy(column = current.column + step), step, spots)
+      } else if currentColumn == 3 || currentColumn == 5 || currentColumn == 7 || currentColumn == 9 then {
+        findAvailableSpotsInHallway(currentColumn + step, step, spots)
       } else {
-        findAvailableSpotsInHallway(current.copy(column = current.column + step), step, spots + current)
+        findAvailableSpotsInHallway(currentColumn + step, step, spots + Location(1, currentColumn))
       }
     }
 
-    val right = findAvailableSpotsInHallway(from.copy(column = from.column + 1), 1, Set.empty)
-    val left = findAvailableSpotsInHallway(from.copy(column = from.column - 1), -1, Set.empty)
+    val right = findAvailableSpotsInHallway(fromColumn + 1, 1, Set.empty)
+    val left = findAvailableSpotsInHallway(fromColumn - 1, -1, Set.empty)
 
     left union right
   }
@@ -69,7 +69,7 @@ case class State(amphipods: Set[Amphipod]) {
           a.location.column != a.amphipodType.destinationColumn
       }
       .flatMap { a =>
-        val availableLocationsInHallway = findAvailableLocationsInHallway(Location(1, a.location.column))
+        val availableLocationsInHallway = findAvailableLocationsInHallway(a.location.column)
         availableLocationsInHallway.map(newLocation => {
           val cost = a.amphipodType.energy * a.location.distanceTo(newLocation)
           State(amphipods = amphipods - a + a.copy(location = newLocation)) -> cost

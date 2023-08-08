@@ -143,7 +143,7 @@ class AmphipodTest extends Specification {
     "return all spaces except spaces above side room" in {
       val state = State(amphipods = Set())
 
-      state.findAvailableLocationsInHallway(Location(1, 6)) must beEqualTo(Set(
+      state.findAvailableLocationsInHallway(6) must beEqualTo(Set(
         Location(1, 1),
         Location(1, 2),
         Location(1, 4),
@@ -159,7 +159,7 @@ class AmphipodTest extends Specification {
         Amphipod(Location(1, 10), Amber)
       ))
 
-      state.findAvailableLocationsInHallway(Location(1, 6)) must beEqualTo(Set(
+      state.findAvailableLocationsInHallway(6) must beEqualTo(Set(
         Location(1, 8)
       ))
     }
