@@ -23,7 +23,7 @@ object AmphipodType {
   val destinationColumns: Set[Int] = AmphipodType.values.map(_.destinationColumn).toSet
 }
 
-case class Amphipod(location: Location, amphipodType: AmphipodType) {
+case class Amphipod(location: Location, `type`: AmphipodType) {
 
   def isInHallway: Boolean = {
     location.row == 1
@@ -56,39 +56,39 @@ case class State(amphipods: Set[Amphipod]) {
   private def findAmphipodInSideRoomThatCanMove(sideRoomColumn: Int): Option[Amphipod] = {
     val amphipodsInSideRoom = amphipods.filter(amphipod => amphipod.location.column == sideRoomColumn)
 
-    if amphipodsInSideRoom.exists(a => a.amphipodType.destinationColumn != sideRoomColumn) then
+    if amphipodsInSideRoom.exists(a => a.`type`.destinationColumn != sideRoomColumn) then
       Some(amphipodsInSideRoom.minBy(_.location.row))
     else
       None
   }
 
   private def findAmphipodsThatCanMoveToHallway(): Set[Amphipod] = {
-    Set(3, 5, 7, 9).flatMap(findAmphipodInSideRoomThatCanMove)
+    destinationColumns.flatMap(findAmphipodInSideRoomThatCanMove)
   }
 
   private def moveAmphipodToHallway(amphipod: Amphipod): Set[(State, Int)] = {
     findAvailableLocationsInHallway(amphipod.location.column)
       .map(newLocation => {
-        val cost = amphipod.amphipodType.energy * amphipod.location.distanceTo(newLocation)
+        val cost = amphipod.`type`.energy * amphipod.location.distanceTo(newLocation)
         State(amphipods = amphipods - amphipod + amphipod.copy(location = newLocation)) -> cost
       })
   }
 
   private def isSideRoomAvailableForAmphipod(amphipod: Amphipod): Boolean = {
     !amphipods.exists { other =>
-      other.location.column == amphipod.amphipodType.destinationColumn && other.amphipodType != amphipod.amphipodType
+      other.location.column == amphipod.`type`.destinationColumn && other.`type` != amphipod.`type`
     }
   }
 
   private def canMoveToSideRoom(amphipod: Amphipod): Boolean = {
     val occupied = amphipods.filter(_.isInHallway).map(_.location.column)
-    val start = Math.min(amphipod.location.column, amphipod.amphipodType.destinationColumn) + 1
-    val end = Math.max(amphipod.location.column, amphipod.amphipodType.destinationColumn)
+    val start = Math.min(amphipod.location.column, amphipod.`type`.destinationColumn) + 1
+    val end = Math.max(amphipod.location.column, amphipod.`type`.destinationColumn)
     start.until(end).forall(!occupied.contains(_))
   }
 
   private def findLocationInSideRoom(amphipod: Amphipod): Location = {
-    val column = amphipod.amphipodType.destinationColumn
+    val column = amphipod.`type`.destinationColumn
     val row = Seq(2, 3, 4, 5)
       .find(r => !amphipods.exists(a => a.location.row == r && a.location.column == column))
       .get
@@ -97,13 +97,11 @@ case class State(amphipods: Set[Amphipod]) {
 
   private def moveAmphipodToSideRoom(amphipod: Amphipod): (State, Int) = {
     val location = findLocationInSideRoom(amphipod)
-    val cost = amphipod.amphipodType.energy * amphipod.location.distanceTo(location)
+    val cost = amphipod.`type`.energy * amphipod.location.distanceTo(location)
     State(amphipods = amphipods - amphipod + amphipod.copy(location = location)) -> cost
   }
 
   def nextStates(): Map[State, Int] = {
-    val occupied = amphipods.map(_.location)
-
     val fromSideRoomToHallway = findAmphipodsThatCanMoveToHallway()
       .flatMap(moveAmphipodToHallway)
 
@@ -117,8 +115,8 @@ case class State(amphipods: Set[Amphipod]) {
   }
 
   def isEndState: Boolean = {
-    amphipods.forall { case a@Amphipod(location, amphipodType) =>
-      !a.isInHallway && location.column == amphipodType.destinationColumn
+    amphipods.forall { a =>
+      !a.isInHallway && a.location.column == a.`type`.destinationColumn
     }
   }
 }
@@ -126,9 +124,7 @@ case class State(amphipods: Set[Amphipod]) {
 def calculateLeastEnergyToOrganizeAmphipods(startState: State): Int = {
 
   val dist = mutable.Map(startState -> 0).withDefaultValue(Int.MaxValue)
-  val q = mutable.PriorityQueue(startState -> 0)(Ordering.by {
-    case (state, energy) => -energy
-  })
+  val q = mutable.PriorityQueue(startState -> 0)(Ordering.by((_, energy) => -energy))
   val visited = mutable.Set[State]()
 
   @tailrec
@@ -137,13 +133,12 @@ def calculateLeastEnergyToOrganizeAmphipods(startState: State): Int = {
     if (state.isEndState) {
       return totalEnergy
     } else if !visited.contains(state) then {
-      state.nextStates().foreach {
-        case (neighborState, energy) =>
-          val s = dist(state) + energy
-          if s < dist(neighborState) then {
-            dist(neighborState) = s
-            q.enqueue(neighborState -> s)
-          }
+      state.nextStates().foreach { (neighborState, energy) =>
+        val s = dist(state) + energy
+        if s < dist(neighborState) then {
+          dist(neighborState) = s
+          q.enqueue(neighborState -> s)
+        }
       }
       visited.add(state)
     }
