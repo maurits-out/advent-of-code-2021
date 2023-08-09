@@ -6,101 +6,6 @@ import org.specs2.specification.core.Fragment
 
 class AmphipodTest extends Specification {
 
-  "Amphipod.heuristicDistanceToDestinationSiteRoom" should {
-
-    Fragment.foreach(Seq(2, 3)) { row =>
-      s"return 0 for Copper amphipod at Location($row, 3)" in {
-        val amphipod = Amphipod(Location(row, 3), Amber)
-
-        amphipod.heuristicDistanceToDestinationSiteRoom() must beEqualTo(0)
-      }
-    }
-
-    Fragment.foreach(Seq(2, 3)) { row =>
-      s"return 0 for Copper amphipod at Location($row, 5)" in {
-        val amphipod = Amphipod(Location(row, 5), Bronze)
-
-        amphipod.heuristicDistanceToDestinationSiteRoom() must beEqualTo(0)
-      }
-    }
-
-    Fragment.foreach(Seq(2, 3)) { row =>
-      s"return 0 for Copper amphipod at Location($row, 7)" in {
-        val amphipod = Amphipod(Location(row, 7), Copper)
-
-        amphipod.heuristicDistanceToDestinationSiteRoom() must beEqualTo(0)
-      }
-    }
-
-    Fragment.foreach(Seq(2, 3)) { row =>
-      s"return 0 for Desert amphipod at Location($row, 9)" in {
-        val amphipod = Amphipod(Location(row, 9), Desert)
-
-        amphipod.heuristicDistanceToDestinationSiteRoom() must beEqualTo(0)
-      }
-    }
-
-    Fragment.foreach(Seq(
-      (Amphipod(Location(1, 1), Amber), 3),
-      (Amphipod(Location(1, 1), Bronze), 50),
-      (Amphipod(Location(1, 1), Copper), 700),
-      (Amphipod(Location(1, 1), Desert), 9000),
-      (Amphipod(Location(1, 11), Amber), 9),
-      (Amphipod(Location(1, 11), Bronze), 70),
-      (Amphipod(Location(1, 11), Copper), 500),
-      (Amphipod(Location(1, 11), Desert), 3000),
-      (Amphipod(Location(1, 6), Amber), 4),
-      (Amphipod(Location(1, 6), Bronze), 20),
-      (Amphipod(Location(1, 6), Copper), 200),
-      (Amphipod(Location(1, 6), Desert), 4000),
-      (Amphipod(Location(3, 3), Desert), 9000),
-      (Amphipod(Location(3, 9), Amber), 9),
-      (Amphipod(Location(2, 5), Copper), 400),
-      (Amphipod(Location(2, 7), Bronze), 40),
-    )) { (amphipod, expectedDistance) =>
-      s"return $expectedDistance for $amphipod" in {
-        amphipod.heuristicDistanceToDestinationSiteRoom() must beEqualTo(expectedDistance)
-      }
-    }
-  }
-
-  "State.heuristicDistanceToEndState" should {
-
-    "return 0 for end state" in {
-      val state = State(
-        amphipods = Set(
-          Amphipod(Location(2, 3), Amber),
-          Amphipod(Location(3, 3), Amber),
-          Amphipod(Location(2, 5), Bronze),
-          Amphipod(Location(3, 5), Bronze),
-          Amphipod(Location(2, 7), Copper),
-          Amphipod(Location(3, 7), Copper),
-          Amphipod(Location(2, 9), Desert),
-          Amphipod(Location(3, 9), Desert),
-        )
-      )
-
-      state.heuristicDistanceToEndState() must beEqualTo(0)
-    }
-
-    "return 7489 for start state in example" in {
-      val state = State(
-        amphipods = Set(
-          Amphipod(Location(2, 3), Bronze),
-          Amphipod(Location(3, 3), Amber),
-          Amphipod(Location(2, 5), Copper),
-          Amphipod(Location(3, 5), Desert),
-          Amphipod(Location(2, 7), Bronze),
-          Amphipod(Location(3, 7), Copper),
-          Amphipod(Location(2, 9), Desert),
-          Amphipod(Location(3, 9), Amber),
-        )
-      )
-
-      state.heuristicDistanceToEndState() must beEqualTo(40 + 400 + 7000 + 40 + 9)
-    }
-  }
-
   "State.isEndState" should {
 
     "return true for the end state" in {
@@ -295,20 +200,20 @@ class AmphipodTest extends Specification {
       ))
     }
 
-    "return states for amphipod returning to first row of side room" in {
+    "return states for amphipod returning to second row of side room" in {
       val state = State(amphipods = Set(
-        Amphipod(Location(3, 3), Amber),
+        Amphipod(Location(2, 3), Amber),
         Amphipod(Location(1, 10), Amber),
       ))
 
       val nextStates = state.nextStates()
 
       nextStates must beEqualTo(Map(
-        State(Set(Amphipod(Location(3, 3), Amber), Amphipod(Location(2, 3), Amber))) -> 8,
+        State(Set(Amphipod(Location(3, 3), Amber), Amphipod(Location(2, 3), Amber))) -> 9,
       ))
     }
 
-    "return states for amphipod returning to second row of side room" in {
+    "return states for amphipod returning to first row of side room" in {
       val state = State(amphipods = Set(
         Amphipod(Location(1, 10), Amber),
       ))
@@ -316,7 +221,7 @@ class AmphipodTest extends Specification {
       val nextStates = state.nextStates()
 
       nextStates must beEqualTo(Map(
-        State(Set(Amphipod(Location(3, 3), Amber))) -> 9,
+        State(Set(Amphipod(Location(2, 3), Amber))) -> 8,
       ))
     }
 
@@ -336,7 +241,7 @@ class AmphipodTest extends Specification {
     "not return states if amphipod is blocked from moving to side room" in {
       val state = State(amphipods = Set(
         Amphipod(Location(1, 6), Amber),
-        Amphipod(Location(1, 5), Copper),
+        Amphipod(Location(1, 4), Copper),
       ))
 
       val nextStates = state.nextStates()
@@ -352,14 +257,14 @@ class AmphipodTest extends Specification {
       val nextStates = state.nextStates()
 
       nextStates must beEqualTo(Map(
-        State(Set(Amphipod(Location(3, 9), Desert))) -> 10000,
+        State(Set(Amphipod(Location(2, 9), Desert))) -> 9000,
       ))
     }
   }
 
   "calculateLeastEnergyToOrganizeAmphipods" should {
 
-    "return least amount of energy for example" in {
+    "return least amount of energy for example in part 1" in {
       val amount = calculateLeastEnergyToOrganizeAmphipods(
         State(amphipods = Set(
           Amphipod(Location(2, 3), Bronze),
@@ -376,7 +281,7 @@ class AmphipodTest extends Specification {
       amount must beEqualTo(12521)
     }
 
-    "return least amount of energy for part 1" in {
+    "return least amount of energy for actual input in part 1" in {
       val amount = calculateLeastEnergyToOrganizeAmphipods(
         State(amphipods = Set(
           Amphipod(Location(2, 3), Desert),
@@ -391,6 +296,56 @@ class AmphipodTest extends Specification {
       )
 
       amount must beEqualTo(16244)
+    }
+
+    "return least amount of energy for example in part 2" in {
+      val amount = calculateLeastEnergyToOrganizeAmphipods(
+        State(amphipods = Set(
+          Amphipod(Location(2, 3), Bronze),
+          Amphipod(Location(3, 3), Desert),
+          Amphipod(Location(4, 3), Desert),
+          Amphipod(Location(5, 3), Amber),
+          Amphipod(Location(2, 5), Copper),
+          Amphipod(Location(3, 5), Copper),
+          Amphipod(Location(4, 5), Bronze),
+          Amphipod(Location(5, 5), Desert),
+          Amphipod(Location(2, 7), Bronze),
+          Amphipod(Location(3, 7), Bronze),
+          Amphipod(Location(4, 7), Amber),
+          Amphipod(Location(5, 7), Copper),
+          Amphipod(Location(2, 9), Desert),
+          Amphipod(Location(3, 9), Amber),
+          Amphipod(Location(4, 9), Copper),
+          Amphipod(Location(5, 9), Amber),
+        ))
+      )
+
+      amount must beEqualTo(44169)
+    }
+
+    "return least amount of energy for actual input in part 2" in {
+      val amount = calculateLeastEnergyToOrganizeAmphipods(
+        State(amphipods = Set(
+          Amphipod(Location(2, 3), Desert),
+          Amphipod(Location(3, 3), Desert),
+          Amphipod(Location(4, 3), Desert),
+          Amphipod(Location(5, 3), Bronze),
+          Amphipod(Location(2, 5), Desert),
+          Amphipod(Location(3, 5), Copper),
+          Amphipod(Location(4, 5), Bronze),
+          Amphipod(Location(5, 5), Copper),
+          Amphipod(Location(2, 7), Bronze),
+          Amphipod(Location(3, 7), Bronze),
+          Amphipod(Location(4, 7), Amber),
+          Amphipod(Location(5, 7), Amber),
+          Amphipod(Location(2, 9), Amber),
+          Amphipod(Location(3, 9), Amber),
+          Amphipod(Location(4, 9), Copper),
+          Amphipod(Location(5, 9), Copper),
+        ))
+      )
+
+      amount must beEqualTo(43226)
     }
   }
 }

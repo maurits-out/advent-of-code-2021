@@ -1,6 +1,6 @@
 package day23
 
-import day23.AmphipodType.{Amber, Bronze, Copper, Desert}
+import day23.AmphipodType.destinationColumns
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -12,21 +12,18 @@ case class Location(row: Int, column: Int) {
   }
 }
 
+
 enum AmphipodType(val energy: Int, val destinationColumn: Int):
   case Amber extends AmphipodType(1, 3)
   case Bronze extends AmphipodType(10, 5)
   case Copper extends AmphipodType(100, 7)
   case Desert extends AmphipodType(1000, 9)
 
-case class Amphipod(location: Location, amphipodType: AmphipodType) {
+object AmphipodType {
+  val destinationColumns: Set[Int] = AmphipodType.values.map(_.destinationColumn).toSet
+}
 
-  def heuristicDistanceToDestinationSiteRoom(): Int = {
-    if (!isInHallway && location.column == amphipodType.destinationColumn) {
-      0
-    } else {
-      amphipodType.energy * (location.row + Math.abs(amphipodType.destinationColumn - location.column))
-    }
-  }
+case class Amphipod(location: Location, amphipodType: AmphipodType) {
 
   def isInHallway: Boolean = {
     location.row == 1
@@ -34,10 +31,6 @@ case class Amphipod(location: Location, amphipodType: AmphipodType) {
 }
 
 case class State(amphipods: Set[Amphipod]) {
-
-  def heuristicDistanceToEndState(): Int = {
-    amphipods.toSeq.map(_.heuristicDistanceToDestinationSiteRoom()).sum
-  }
 
   def findAvailableLocationsInHallway(fromColumn: Int): Set[Location] = {
 
@@ -47,7 +40,7 @@ case class State(amphipods: Set[Amphipod]) {
     def findAvailableSpotsInHallway(currentColumn: Int, step: Int, spots: Set[Location]): Set[Location] = {
       if currentColumn < 1 || currentColumn > 11 || occupied.contains(currentColumn) then {
         spots
-      } else if currentColumn == 3 || currentColumn == 5 || currentColumn == 7 || currentColumn == 9 then {
+      } else if destinationColumns.contains(currentColumn) then {
         findAvailableSpotsInHallway(currentColumn + step, step, spots)
       } else {
         findAvailableSpotsInHallway(currentColumn + step, step, spots + Location(1, currentColumn))
@@ -60,56 +53,67 @@ case class State(amphipods: Set[Amphipod]) {
     left union right
   }
 
+  private def findAmphipodInSideRoomThatCanMove(sideRoomColumn: Int): Option[Amphipod] = {
+    val amphipodsInSideRoom = amphipods.filter(amphipod => amphipod.location.column == sideRoomColumn)
+
+    if amphipodsInSideRoom.exists(a => a.amphipodType.destinationColumn != sideRoomColumn) then
+      Some(amphipodsInSideRoom.minBy(_.location.row))
+    else
+      None
+  }
+
+  private def findAmphipodsThatCanMoveToHallway(): Set[Amphipod] = {
+    Set(3, 5, 7, 9).flatMap(findAmphipodInSideRoomThatCanMove)
+  }
+
+  private def moveAmphipodToHallway(amphipod: Amphipod): Set[(State, Int)] = {
+    findAvailableLocationsInHallway(amphipod.location.column)
+      .map(newLocation => {
+        val cost = amphipod.amphipodType.energy * amphipod.location.distanceTo(newLocation)
+        State(amphipods = amphipods - amphipod + amphipod.copy(location = newLocation)) -> cost
+      })
+  }
+
+  private def isSideRoomAvailableForAmphipod(amphipod: Amphipod): Boolean = {
+    !amphipods.exists { other =>
+      other.location.column == amphipod.amphipodType.destinationColumn && other.amphipodType != amphipod.amphipodType
+    }
+  }
+
+  private def canMoveToSideRoom(amphipod: Amphipod): Boolean = {
+    val occupied = amphipods.filter(_.isInHallway).map(_.location.column)
+    val start = Math.min(amphipod.location.column, amphipod.amphipodType.destinationColumn) + 1
+    val end = Math.max(amphipod.location.column, amphipod.amphipodType.destinationColumn)
+    start.until(end).forall(!occupied.contains(_))
+  }
+
+  private def findLocationInSideRoom(amphipod: Amphipod): Location = {
+    val column = amphipod.amphipodType.destinationColumn
+    val row = Seq(2, 3, 4, 5)
+      .find(r => !amphipods.exists(a => a.location.row == r && a.location.column == column))
+      .get
+    Location(row, column)
+  }
+
+  private def moveAmphipodToSideRoom(amphipod: Amphipod): (State, Int) = {
+    val location = findLocationInSideRoom(amphipod)
+    val cost = amphipod.amphipodType.energy * amphipod.location.distanceTo(location)
+    State(amphipods = amphipods - amphipod + amphipod.copy(location = location)) -> cost
+  }
+
   def nextStates(): Map[State, Int] = {
     val occupied = amphipods.map(_.location)
 
-    val fromSideRoomToHallway = amphipods
-      .filter { a =>
-        a.location.row == 2 || (a.location.row == 3 && !occupied.contains(Location(2, a.location.column))) &&
-          a.location.column != a.amphipodType.destinationColumn
-      }
-      .flatMap { a =>
-        val availableLocationsInHallway = findAvailableLocationsInHallway(a.location.column)
-        availableLocationsInHallway.map(newLocation => {
-          val cost = a.amphipodType.energy * a.location.distanceTo(newLocation)
-          State(amphipods = amphipods - a + a.copy(location = newLocation)) -> cost
-        })
-      }.toMap
+    val fromSideRoomToHallway = findAmphipodsThatCanMoveToHallway()
+      .flatMap(moveAmphipodToHallway)
 
     val fromHallwayToSideRoom = amphipods
       .filter(_.isInHallway)
-      .filter {
-        a => {
-          Burrow.SiteRooms(a.amphipodType).forall { location =>
-            !amphipods.exists { other =>
-              other.location == location && other.amphipodType != a.amphipodType
-            }
-          }
-        }
-      }
-      .filter { a =>
-        val destColumn = a.amphipodType.destinationColumn
-        val rowFree = if (a.location.column < destColumn) {
-          (a.location.column + 1).until(destColumn).forall(c => !occupied.contains(Location(1, c)))
-        } else {
-          (destColumn + 1).until(a.location.column).forall(c => !occupied.contains(Location(1, c)))
-        }
-        rowFree && !occupied.contains(Location(2, destColumn))
-      }
-      .map {
-        a => {
-          val location = Location(3, a.amphipodType.destinationColumn)
-          val newLocation = if (occupied.contains(location)) {
-            Location(2, a.amphipodType.destinationColumn)
-          } else {
-            location
-          }
-          val cost = a.amphipodType.energy * a.location.distanceTo(newLocation)
-          State(amphipods = amphipods - a + a.copy(location = newLocation)) -> cost
-        }
-      }.toMap
+      .filter(isSideRoomAvailableForAmphipod)
+      .filter(canMoveToSideRoom)
+      .map(moveAmphipodToSideRoom)
 
-    fromSideRoomToHallway ++ fromHallwayToSideRoom
+    (fromSideRoomToHallway union fromHallwayToSideRoom).toMap
   }
 
   def isEndState: Boolean = {
@@ -119,55 +123,34 @@ case class State(amphipods: Set[Amphipod]) {
   }
 }
 
-object Burrow {
-  val SiteRooms: Map[AmphipodType, Set[Location]] = Map(
-    Amber -> Set(Location(2, 3), Location(3, 3)),
-    Bronze -> Set(Location(2, 5), Location(3, 5)),
-    Copper -> Set(Location(2, 7), Location(3, 7)),
-    Desert -> Set(Location(2, 9), Location(3, 9)),
-  )
-
-  val AllSpaces: Set[Location] = (1 to 11).map(Location(1, _)).toSet union SiteRooms.values.reduce(_ union _)
-
-  val Forbidden: Set[Location] = Set(Location(1, 3), Location(1, 5), Location(1, 7), Location(1, 9))
-}
-
 def calculateLeastEnergyToOrganizeAmphipods(startState: State): Int = {
 
-  val fScore: mutable.Map[State, Int] = mutable.HashMap()
-  val gScore: mutable.Map[State, Int] = mutable.HashMap().withDefaultValue(Int.MaxValue)
-  val open: mutable.PriorityQueue[State] = mutable.PriorityQueue()(Ordering.by(s => -fScore(s)))
+  val dist = mutable.Map(startState -> 0).withDefaultValue(Int.MaxValue)
+  val q = mutable.PriorityQueue(startState -> 0)(Ordering.by {
+    case (state, energy) => -energy
+  })
+  val visited = mutable.Set[State]()
 
   @tailrec
-  def aStar(): Int = {
-    if (open.isEmpty) {
-      throw new IllegalStateException("End state was not reached")
+  def dijkstra(): Int = {
+    val (state, totalEnergy) = q.dequeue()
+    if (state.isEndState) {
+      return totalEnergy
+    } else if !visited.contains(state) then {
+      state.nextStates().foreach {
+        case (neighborState, energy) =>
+          val s = dist(state) + energy
+          if s < dist(neighborState) then {
+            dist(neighborState) = s
+            q.enqueue(neighborState -> s)
+          }
+      }
+      visited.add(state)
     }
-    val current = open.dequeue()
-    if (current.isEndState) {
-      gScore(current)
-    } else {
-      val neighborToTentativeGScore = current.nextStates().view.mapValues(_ + gScore(current)).filter {
-        (neighbor, tentativeGScore) => tentativeGScore < gScore(neighbor)
-      }.toMap
-
-      gScore.addAll(neighborToTentativeGScore)
-      fScore.addAll(neighborToTentativeGScore.map {
-        case (neighbor, tentativeGScore) =>
-          neighbor -> (tentativeGScore + fScore.getOrElse(neighbor, 0))
-      })
-      open.enqueue(neighborToTentativeGScore.keySet.toSeq: _*)
-
-      aStar()
-    }
+    dijkstra()
   }
 
-
-  fScore(startState) = startState.heuristicDistanceToEndState()
-  gScore(startState) = 0
-  open.enqueue(startState)
-
-  aStar()
+  dijkstra()
 }
 
 
