@@ -136,5 +136,5 @@ def calculateLeastEnergy(startState: State): Int =
       visited.add(state)
     end if
   end while
-    throw new IllegalStateException("end state not found")
+  throw new IllegalStateException("end state not found")
 end calculateLeastEnergy
