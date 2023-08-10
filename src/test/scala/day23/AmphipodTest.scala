@@ -2,7 +2,6 @@ package day23
 
 import day23.AmphipodType.{Amber, Bronze, Copper, Desert}
 import org.specs2.mutable.Specification
-import org.specs2.specification.core.Fragment
 
 class AmphipodTest extends Specification {
 
@@ -79,7 +78,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map(
+      nextStates must beEqualTo(Set(
         State(Set(Amphipod(Location(1, 4), Amber))) -> 4,
         State(Set(Amphipod(Location(1, 8), Amber))) -> 2,
         State(Set(Amphipod(Location(1, 1), Amber))) -> 7,
@@ -97,7 +96,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map(
+      nextStates must beEqualTo(Set(
         State(Set(Amphipod(Location(1, 4), Amber))) -> 5,
         State(Set(Amphipod(Location(1, 8), Amber))) -> 3,
         State(Set(Amphipod(Location(1, 1), Amber))) -> 8,
@@ -117,7 +116,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map(
+      nextStates must beEqualTo(Set(
         State(Set(Amphipod(Location(1, 4), Amber), Amphipod(Location(3, 7), Amber))) -> 4,
         State(Set(Amphipod(Location(1, 8), Amber), Amphipod(Location(3, 7), Amber))) -> 2,
         State(Set(Amphipod(Location(1, 1), Amber), Amphipod(Location(3, 7), Amber))) -> 7,
@@ -135,7 +134,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map.empty)
+      nextStates must beEqualTo(Set.empty)
     }
 
     "return cost based on energy of amphipod moving from side room to hallway" in {
@@ -145,7 +144,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map(
+      nextStates must beEqualTo(Set(
         State(Set(Amphipod(Location(1, 4), Bronze))) -> 50,
         State(Set(Amphipod(Location(1, 8), Bronze))) -> 30,
         State(Set(Amphipod(Location(1, 1), Bronze))) -> 80,
@@ -166,7 +165,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map(
+      nextStates must beEqualTo(Set(
         State(Set(
           Amphipod(Location(1, 4), Amber),
           Amphipod(Location(1, 1), Bronze),
@@ -208,7 +207,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map(
+      nextStates must beEqualTo(Set(
         State(Set(Amphipod(Location(3, 3), Amber), Amphipod(Location(2, 3), Amber))) -> 9,
       ))
     }
@@ -220,7 +219,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map(
+      nextStates must beEqualTo(Set(
         State(Set(Amphipod(Location(2, 3), Amber))) -> 8,
       ))
     }
@@ -235,7 +234,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map.empty)
+      nextStates must beEqualTo(Set.empty)
     }
 
     "not return states if amphipod is blocked from moving to side room" in {
@@ -246,7 +245,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map.empty)
+      nextStates must beEqualTo(Set.empty)
     }
 
     "return cost based on energy of amphipod moving from hallway to side room" in {
@@ -256,7 +255,7 @@ class AmphipodTest extends Specification {
 
       val nextStates = state.nextStates()
 
-      nextStates must beEqualTo(Map(
+      nextStates must beEqualTo(Set(
         State(Set(Amphipod(Location(2, 9), Desert))) -> 9000,
       ))
     }
@@ -265,7 +264,7 @@ class AmphipodTest extends Specification {
   "calculateLeastEnergyToOrganizeAmphipods" should {
 
     "return least amount of energy for example in part 1" in {
-      val amount = calculateLeastEnergyToOrganizeAmphipods(
+      val amount = calculateLeastEnergy(
         State(amphipods = Set(
           Amphipod(Location(2, 3), Bronze),
           Amphipod(Location(3, 3), Amber),
@@ -282,7 +281,7 @@ class AmphipodTest extends Specification {
     }
 
     "return least amount of energy for actual input in part 1" in {
-      val amount = calculateLeastEnergyToOrganizeAmphipods(
+      val amount = calculateLeastEnergy(
         State(amphipods = Set(
           Amphipod(Location(2, 3), Desert),
           Amphipod(Location(3, 3), Bronze),
@@ -299,7 +298,7 @@ class AmphipodTest extends Specification {
     }
 
     "return least amount of energy for example in part 2" in {
-      val amount = calculateLeastEnergyToOrganizeAmphipods(
+      val amount = calculateLeastEnergy(
         State(amphipods = Set(
           Amphipod(Location(2, 3), Bronze),
           Amphipod(Location(3, 3), Desert),
@@ -324,7 +323,7 @@ class AmphipodTest extends Specification {
     }
 
     "return least amount of energy for actual input in part 2" in {
-      val amount = calculateLeastEnergyToOrganizeAmphipods(
+      val amount = calculateLeastEnergy(
         State(amphipods = Set(
           Amphipod(Location(2, 3), Desert),
           Amphipod(Location(3, 3), Desert),
